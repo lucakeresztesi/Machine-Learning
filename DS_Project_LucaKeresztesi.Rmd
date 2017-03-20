@@ -541,6 +541,7 @@ grid.arrange(p9, p10, ncol = 1)
 ## Model selection
 
 All 3 models presented relatively good results for the classification problem on the dataset.
+
 * Random Forest and GBM provided pretty similar results with GBM providing a slightly lower error rate and higher AUC
 
 * GBM produced more false positives than Random Forest, but the difference is not significant
