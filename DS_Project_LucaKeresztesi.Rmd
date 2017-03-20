@@ -1,26 +1,154 @@
 ---
-title: "DS_Project_LucaKeresztesi"
+title: "Data Science for Business Project"
 author: "Luca Keresztesi"
-date: '2017 március 15 '
+date: '2017 March 15. '
 output: html_document
 ---
 
 ## Introduction
 This dataset summarizes a heterogeneous set of features about articles published by the online news site called Mashable in a period of two years. The goal of the project is to predict the number of shares in social networks (popularity) that can be achieved by the key characteistics of news articles.
 
-<!-- "Clustering to see if articles can be grouped reasonably; -->
-<!-- RF, GBM with cross-validation to find a good popularity prediction model;" -->
-
 Link to the original dataset: http://archive.ics.uci.edu/ml/datasets/Online+News+Popularity#
 
+* The articles were published by Mashable (www.mashable.com) and their content as the rights to reproduce it belongs to them.
 
-```{r setup, include=FALSE}
-#rm(list=ls())
+* Data acquisition date: January 8, 2015 
+
+Attribute Information: 
+
+* 0. url: URL of the article (non-predictive) 
+
+* 1. timedelta: Days between the article publication and the dataset acquisition (non-predictive) 
+
+* 2. n_tokens_title: Number of words in the title 
+
+* 3. n_tokens_content: Number of words in the content 
+
+* 4. n_unique_tokens: Rate of unique words in the content 
+
+* 5. n_non_stop_words: Rate of non-stop words in the content 
+
+* 6. n_non_stop_unique_tokens: Rate of unique non-stop words in the content 
+
+* 7. num_hrefs: Number of links 
+
+* 8. num_self_hrefs: Number of links to other articles published by Mashable 
+
+* 9. num_imgs: Number of images 
+
+* 10. num_videos: Number of videos 
+
+* 11. average_token_length: Average length of the words in the content 
+
+* 12. num_keywords: Number of keywords in the metadata 
+
+* 13. data_channel_is_lifestyle: Is data channel 'Lifestyle'? 
+
+* 14. data_channel_is_entertainment: Is data channel 'Entertainment'? 
+
+* 15. data_channel_is_bus: Is data channel 'Business'? 
+
+* 16. data_channel_is_socmed: Is data channel 'Social Media'? 
+
+* 17. data_channel_is_tech: Is data channel 'Tech'? 
+
+* 18. data_channel_is_world: Is data channel 'World'? 
+
+* 19. kw_min_min: Worst keyword (min. shares) 
+
+* 20. kw_max_min: Worst keyword (max. shares) 
+
+* 21. kw_avg_min: Worst keyword (avg. shares) 
+
+* 22. kw_min_max: Best keyword (min. shares) 
+
+* 23. kw_max_max: Best keyword (max. shares) 
+
+* 24. kw_avg_max: Best keyword (avg. shares) 
+
+* 25. kw_min_avg: Avg. keyword (min. shares) 
+
+* 26. kw_max_avg: Avg. keyword (max. shares) 
+
+* 27. kw_avg_avg: Avg. keyword (avg. shares) 
+
+* 28. self_reference_min_shares: Min. shares of referenced articles in Mashable 
+
+* 29. self_reference_max_shares: Max. shares of referenced articles in Mashable 
+
+* 30. self_reference_avg_sharess: Avg. shares of referenced articles in Mashable 
+
+* 31. weekday_is_monday: Was the article published on a Monday? 
+
+* 32. weekday_is_tuesday: Was the article published on a Tuesday? 
+
+* 33. weekday_is_wednesday: Was the article published on a Wednesday? 
+
+* 34. weekday_is_thursday: Was the article published on a Thursday? 
+
+* 35. weekday_is_friday: Was the article published on a Friday? 
+
+* 36. weekday_is_saturday: Was the article published on a Saturday? 
+
+* 37. weekday_is_sunday: Was the article published on a Sunday? 
+
+* 38. is_weekend: Was the article published on the weekend? 
+
+* 39. LDA_00: Closeness to LDA topic 0 
+
+* 40. LDA_01: Closeness to LDA topic 1 
+
+* 41. LDA_02: Closeness to LDA topic 2 
+
+* 42. LDA_03: Closeness to LDA topic 3 
+
+* 43. LDA_04: Closeness to LDA topic 4 
+
+* 44. global_subjectivity: Text subjectivity 
+
+* 45. global_sentiment_polarity: Text sentiment polarity 
+
+* 46. global_rate_positive_words: Rate of positive words in the content 
+
+* 47. global_rate_negative_words: Rate of negative words in the content 
+
+* 48. rate_positive_words: Rate of positive words among non-neutral tokens 
+
+* 49. rate_negative_words: Rate of negative words among non-neutral tokens 
+
+* 50. avg_positive_polarity: Avg. polarity of positive words 
+
+* 51. min_positive_polarity: Min. polarity of positive words 
+
+* 52. max_positive_polarity: Max. polarity of positive words 
+
+* 53. avg_negative_polarity: Avg. polarity of negative words 
+
+* 54. min_negative_polarity: Min. polarity of negative words 
+
+* 55. max_negative_polarity: Max. polarity of negative words 
+
+* 56. title_subjectivity: Title subjectivity 
+
+* 57. title_sentiment_polarity: Title polarity 
+
+* 58. abs_title_subjectivity: Absolute subjectivity level 
+
+* 59. abs_title_sentiment_polarity: Absolute polarity level 
+
+* 60. shares: Number of shares (target)
+
+```{r setup, include = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
+rm(list=ls())
 knitr::opts_chunk$set(echo = TRUE)
 
-setwd("..\\..\\temp\\rWorkDir")
+setwd("C:/Users/Keresztesi Luca/Box Sync/CEU 2nd trimester/Data Science for Business/Final Project/MachineLearning")
 getwd()
 
+# install.packages("devtools")
+# install.packages("https://h2o-release.s3.amazonaws.com/h2o-ensemble/R/h2oEnsemble_0.1.5.tar.gz", repos = NULL)
+# install.packages('ROCR')
+library(devtools)
 library(readr)
 library(ggplot2)
 library(pander)
@@ -30,105 +158,457 @@ library(knitr)
 library(reshape2)
 library(h2o)
 library(h2oEnsemble)
+library(ggthemes)
+library(randomForest)
+library(ROCR)
+library(hexbin)
+library(NbClust)
+library(gridExtra)
+library(pander)
 
-dt_original <- read.csv(".\\ds\\BPD_Arrests.csv")
 
-# barPalette <- "Dark2"
-# dateFormat <- "%m/%d/%Y"
-
-# opts_knit$set(root.dir = "../")
-
+dt_original <- read.csv("OnlineNewsPopularity_original.csv")
+dt <- dt_original
 
 ```
 
 ## Exploratory Data Analysis
 
-Data Set Information:
+The first two variables (URL; time between the atricle was published and the dataset was created) were removed, because they had no added value to the analysis.
 
-* The articles were published by Mashable (www.mashable.com) and their content as the rights to reproduce it belongs to them. Hence, this dataset does not share the original content but some statistics associated with it. The original content be publicly accessed and retrieved using the provided urls. 
-* Acquisition date: January 8, 2015 
-* The estimated relative performance values were estimated by the authors using a Random Forest classifier and a rolling windows as assessment method. See their article for more details on how the relative performance values were set.
+Histograms for all variables were created, which led to the followings:
 
+* NAs in this dataset are marked with 0, which makes it especially difficult to differentiate the real missing values. Based on the histograms, in some of the variables (average_token_length, global_subjectivity, rate_positive_words, rate_negative_words, avg_positive_polarity, max_positive_polarity) it is visible that 0 values mark NAs, since the distribution and the actual measurement of the variable indicates that 0 values have no meaning.
 
-Attribute Information:
+* Three variables (kw_min_min, kw_avg_min, kw_min_avg) describing the number of shares of keywords have a significant number of -1 values, which is meaningless in this case, therefore these variables were dropped.
 
-Number of Attributes: 61 (58 predictive attributes, 2 non-predictive, 1 goal field) 
+* Variables that are positively skewed and make more sense in relative than in absolute terms 
+ were transformed by taking the log. Those variables which have observations with 0 values were transformed by taking their square root.
 
-Attribute Information: 
-0. url: URL of the article (non-predictive) 
-1. timedelta: Days between the article publication and the dataset acquisition (non-predictive) 
-2. n_tokens_title: Number of words in the title 
-3. n_tokens_content: Number of words in the content 
-4. n_unique_tokens: Rate of unique words in the content 
-5. n_non_stop_words: Rate of non-stop words in the content 
-6. n_non_stop_unique_tokens: Rate of unique non-stop words in the content 
-7. num_hrefs: Number of links 
-8. num_self_hrefs: Number of links to other articles published by Mashable 
-9. num_imgs: Number of images 
-10. num_videos: Number of videos 
-11. average_token_length: Average length of the words in the content 
-12. num_keywords: Number of keywords in the metadata 
-13. data_channel_is_lifestyle: Is data channel 'Lifestyle'? 
-14. data_channel_is_entertainment: Is data channel 'Entertainment'? 
-15. data_channel_is_bus: Is data channel 'Business'? 
-16. data_channel_is_socmed: Is data channel 'Social Media'? 
-17. data_channel_is_tech: Is data channel 'Tech'? 
-18. data_channel_is_world: Is data channel 'World'? 
-19. kw_min_min: Worst keyword (min. shares) 
-20. kw_max_min: Worst keyword (max. shares) 
-21. kw_avg_min: Worst keyword (avg. shares) 
-22. kw_min_max: Best keyword (min. shares) 
-23. kw_max_max: Best keyword (max. shares) 
-24. kw_avg_max: Best keyword (avg. shares) 
-25. kw_min_avg: Avg. keyword (min. shares) 
-26. kw_max_avg: Avg. keyword (max. shares) 
-27. kw_avg_avg: Avg. keyword (avg. shares) 
-28. self_reference_min_shares: Min. shares of referenced articles in Mashable 
-29. self_reference_max_shares: Max. shares of referenced articles in Mashable 
-30. self_reference_avg_sharess: Avg. shares of referenced articles in Mashable 
-31. weekday_is_monday: Was the article published on a Monday? 
-32. weekday_is_tuesday: Was the article published on a Tuesday? 
-33. weekday_is_wednesday: Was the article published on a Wednesday? 
-34. weekday_is_thursday: Was the article published on a Thursday? 
-35. weekday_is_friday: Was the article published on a Friday? 
-36. weekday_is_saturday: Was the article published on a Saturday? 
-37. weekday_is_sunday: Was the article published on a Sunday? 
-38. is_weekend: Was the article published on the weekend? 
-39. LDA_00: Closeness to LDA topic 0 
-40. LDA_01: Closeness to LDA topic 1 
-41. LDA_02: Closeness to LDA topic 2 
-42. LDA_03: Closeness to LDA topic 3 
-43. LDA_04: Closeness to LDA topic 4 
-44. global_subjectivity: Text subjectivity 
-45. global_sentiment_polarity: Text sentiment polarity 
-46. global_rate_positive_words: Rate of positive words in the content 
-47. global_rate_negative_words: Rate of negative words in the content 
-48. rate_positive_words: Rate of positive words among non-neutral tokens 
-49. rate_negative_words: Rate of negative words among non-neutral tokens 
-50. avg_positive_polarity: Avg. polarity of positive words 
-51. min_positive_polarity: Min. polarity of positive words 
-52. max_positive_polarity: Max. polarity of positive words 
-53. avg_negative_polarity: Avg. polarity of negative words 
-54. min_negative_polarity: Min. polarity of negative words 
-55. max_negative_polarity: Max. polarity of negative words 
-56. title_subjectivity: Title subjectivity 
-57. title_sentiment_polarity: Title polarity 
-58. abs_title_subjectivity: Absolute subjectivity level 
-59. abs_title_sentiment_polarity: Absolute polarity level 
-60. shares: Number of shares (target)
+Alltogether approx. 2,600 observations have been removed from the dataset.
+At the end the dataset had `r nrow(dt)` observations and `r ncol(dt)` variables.
 
 
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
 
-```{r cars}
-summary(cars)
+dim(dt)
+head(dt)
+dt[[1]] <- NULL
+dt[[1]] <- NULL
+str(dt)
+colnames(dt)
+summary(dt)
+
+```
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+for(i in 1:length(dt)){
+  print(ggplot(dt, aes_string(x = colnames(dt)[i])) +
+          geom_histogram(aes(fill = ..count..)) + 
+          ggtitle(colnames(dt)[i])+
+          scale_fill_distiller(palette = "Spectral"))}
 ```
 
-## Including Plots
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
 
-You can also embed plots, for example:
+sapply(dt, function(x) sum(is.na(x)))
+sapply(dt, function(x) sum(x < 0, na.rm=TRUE))    
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+dt <- subset(dt, dt$average_token_length > 0)
+dt <- subset(dt, dt$global_subjectivity > 0)
+dt <- subset(dt, dt$rate_positive_words > 0)
+dt <- subset(dt, dt$rate_negative_words > 0)
+dt <- subset(dt, dt$avg_positive_polarity > 0)
+dt <- subset(dt, dt$max_positive_polarity > 0)
+dt$kw_min_min <- NULL
+dt$kw_min_avg <- NULL
+dt$kw_avg_min <- NULL
+
+
+for(i in c("num_hrefs",
+     "num_self_hrefs",
+     "num_imgs",
+     "num_videos",
+     "kw_avg_max",
+     "LDA_00",
+     "LDA_01",
+     "LDA_02",
+     "LDA_03",
+     "LDA_04",
+     "global_rate_positive_words",
+     "global_rate_negative_words",
+     "rate_negative_words",
+     "min_positive_polarity",
+     "title_subjectivity",
+     "abs_title_sentiment_polarity",
+     "shares")){
+  if((sum(dt[i]==0)==0)){
+    dt[,ncol(dt)+1]<-log(dt[i])
+    colnames(dt)[ncol(dt)]<-paste("log_",i,sep="")
+  }
+  else{
+    dt[,ncol(dt)+1]<-sqrt(dt[i])
+    colnames(dt)[ncol(dt)]<-paste("sqrt_",i,sep="")
+  }
+}
+
+dim(dt)
+head(dt)
+summary(dt)
+sapply(dt, function(x) sum(x < 0, na.rm=TRUE))
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Relationship between the explanatory and output variables
+
+To understand the relationship between the explanatory and output variables better, specific groups of categorical input variables were explored. The boxplots on the data channel and on day of publication of the atricle both showcase that Log share is not very different for separate groups of observations for these variables. Since the data channel and the day of publication variables make no big difference in terms of log shares, these categorical variables were dropped from further analysis.
+
+A heatmap was created to visualize the correlation between all pairs of the 60 variables. 
+As a conclusion we can see that shares is strongly correlated with between most of the variables, therefore the dataset is expected to have a relatively low prediction value for article shares online. This is also validated by plotting the distribution of correlation between all 60 variables, which shows that extreme correlation values are relatively rare. From the heatmap we can also conclude that there are some groups of variables which are relatively close to each other, which can be further discovered through hierarchical clustering. For this purpose I created the dendogram of the variables and identified the 5 main groups amongst the predictors. 
+Even though these results are getting us closer to understand the dataset, further data exploration needs to be done based on the initial results of the importance ranking of variables in the prediction.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+# Data Channel
+dt$channel[dt$data_channel_is_lifestyle == 1] <- "Lifestyle"
+dt$channel[dt$data_channel_is_entertainment == 1] <- "Entertainment"
+dt$channel[dt$data_channel_is_bus == 1] <- "Business"
+dt$channel[dt$data_channel_is_socmed == 1] <- "Social Media"
+dt$channel[dt$data_channel_is_tech == 1] <- "Technology"
+dt$channel[dt$data_channel_is_world == 1] <- "World"
+
+ggplot(dt, aes(x = channel, y = log_shares)) +
+  geom_smooth() +
+  geom_boxplot() +
+  labs(
+    x = "Channel",
+    y = "Average Log shares",
+    title ="Log shares per channel") + 
+  theme_bw()
+
+# Weekday
+dt$day[dt$weekday_is_monday == 1] <- "Monday"
+dt$day[dt$weekday_is_tuesday == 1] <- "Tuesday"
+dt$day[dt$weekday_is_wednesday == 1] <- "Wednesday"
+dt$day[dt$weekday_is_thursday == 1] <- "Thursday"
+dt$day[dt$weekday_is_friday == 1] <- "Friday"
+dt$day[dt$weekday_is_saturday == 1] <- "Saturday"
+dt$day[dt$weekday_is_sunday == 1] <- "Sunday"
+
+ggplot(dt, aes(x = day, y = log_shares)) +
+  geom_smooth() +
+  geom_boxplot() +
+  labs(
+    x = "Day of the week",
+    y = "Average Log shares",
+    title ="Log shares per day of the week") + 
+  theme_bw()
+
+dt2 <- subset(dt, select = colnames(dt)[!colnames(dt) %in% c("weekday_is_monday",
+                                                             "weekday_is_tuesday",
+                                                             "weekday_is_wednesday",
+                                                             "weekday_is_thursday",
+                                                             "weekday_is_friday",
+                                                             "weekday_is_saturday",
+                                                             "weekday_is_sunday",
+                                                             "data_channel_is_lifestyle",
+                                                             "data_channel_is_entertainment",
+                                                             "data_channel_is_bus",
+                                                             "data_channel_is_socmed",
+                                                             "data_channel_is_tech",
+                                                             "data_channel_is_world",
+                                                             "day",
+                                                             "channel")])
+corr <- 1 - cor(dt2)
+pander(summary(corr[60, -60]))
+heatmap(corr,
+        main = "Heatmap of all variables")
+
+qplot(1 - corr[60,-60], binwidth = 0.01, fill = ..count.., geom = "histogram", xlab = "Correlation", ylab = "Count", main = "Distribution of correlation values amongst the 60 variables")
+
+hc <- hclust(dist(corr))
+par(mfrow = c(1,1))
+plot(hc)
+rect.hclust(hc, k = 5, border = 'red')
+
+```
+
+## Feature Engineering on the output variable
+
+I transformed the shares variable into 2 categories based on the distribution of the variable: category "high" for articles with shares above the 3rd Quartile and "low" for the rest. This allowed me to look at the analysis as a binary classificantion problem.
+Due to the high number of input variables I did not do other feature engineering, since I needed further exploration of which variables to focus on.  
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+pander(summary(dt2$shares))
+dt2$shares_cat[dt2$shares < 2799] <- "low"
+dt2$shares_cat[dt2$shares >= 2800] <- "high"
+
+```
+
+## Machine Learning
+
+To do model selection I splitted the dataset into a training, a validation and a test set (25% - 25% - 50%). 
+I used three models in my analysis: Random Forest and GBM and GBM with cross-validation. Since GBM with cross-validation (5-folds) provided nearly the same results as GBM without cross-validation, and it took a lot of computing capacity to run, I finally left it out from this current analysis due to its low added value.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
+
+set.seed(2017)
+h2o.init()
+
+dt2$shares_cat <- as.factor(dt2$shares_cat)
+dt2$shares <- NULL
+dt2$log_shares  <- NULL
+h2o_d <- as.h2o(dt2)
+h2o_dt <- h2o.splitFrame(h2o_d, ratios = c(.5, 0.25), seed = 2017)
+names(h2o_dt) <- c('train', 'valid', 'test')
+
+```
+
+## Random Forest modeling
+
+My machine learning engine was a remote h2o server. 
+I used different number of predictors other than the baseline setup: tried models with 4, 8 and 10 predictors per tree.The max depth of trees was 15, 20 and 25 and in all forests 100 trees were fitted. The seed is set within the loop, so the results are reproducible. In all steps I used h2o as it turned out to be quite useful with the standardized set of commands.
+
+Firstly, I ran the model with grid search included, then models with specific hyperparameter sets were sorted and filtered based on the highest AUC value.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
+
+# Random Forest
+h2o.rm("RF")
+
+rf <- h2o.grid(
+  algorithm = "randomForest", 
+  grid_id = "RF",
+  hyper_params = list(max_depth = c(15, 20, 25), mtries = c(4, 8, 10)),
+  training_frame = h2o_dt$train,
+  validation_frame = h2o_dt$valid,
+  x = colnames(h2o_dt$train),
+  y = "shares_cat",
+  seed = 2017,
+  ntrees = 100
+)
+
+rf_model <- h2o.getGrid(
+  grid_id = "RF", 
+  sort_by = "auc",
+  decreasing = TRUE)
+
+```
+As the next step, the model with the best parameter set was run on the validation and the test set to receive AUC values.  
+  
+I used the F1 metric to decide the threshold in all models since it is the default metric for binary classification problems. 
+
+The plots below showcase the results for accuracy and the ROC curve with different threshold for validation set and test set. The results are fairly similar, but not the same for the two.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+rf_model
+rf_best <- h2o.getModel(rf_model@model_ids[[1]]) # Getting the best model
+rf_best@parameters$max_depth # Get max_depth from the best model
+rf_best@parameters$mtries # Get mtries from the best model
+
+rf_valid <- h2o.performance(rf_best, valid = TRUE) # Running the best model on validation data
+rf_validrate <- cbind(h2o.fpr(rf_valid), h2o.tpr(rf_valid)$tpr)
+colnames(rf_validrate)[2] <- "fpr"
+colnames(rf_validrate)[3] <- "tpr"
+rf_test <- h2o.performance(rf_best, newdata = h2o_dt$test) # Running the best model on test data
+rf_testrate <- cbind(h2o.fpr(rf_test), h2o.tpr(rf_test)$tpr)
+h2o.auc(rf_test)
+colnames(rf_validrate)[2] <- "fpr"
+colnames(rf_testrate)[3] <- "tpr"
+
+p1 <- ggplot(h2o.F1(rf_valid)) + 
+  geom_line(aes(x = threshold, y = f1, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="red", midpoint = 0.5) +
+  labs(x = "Threshold", y = "Accuracy", 
+    title ="Accuracy of prediction for the validation set")
+
+p2 <- ggplot(h2o.F1(rf_test)) + 
+  geom_line(aes(x = threshold, y = f1, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="blue", midpoint = 0.5) +
+  labs(x = "Threshold", y = "Accuracy", 
+    title ="Accuracy of prediction for the test set")
+
+p3 <- ggplot(rf_validrate) + 
+  geom_line(aes(x = fpr, y = tpr, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="red", midpoint = 0.5) +
+  labs(x = "False Positive Rate", y = "True Positive Rate", 
+    title ="AUC curve for the validation set")
+
+p4 <- ggplot(rf_testrate) + 
+  geom_line(aes(x = fpr, y = tpr, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="blue", midpoint = 0.5) +
+  labs(x = "False Positive Rate", y = "True Positive Rate", 
+    title ="AUC curve for the test set") 
+
+grid.arrange(p1, p3, ncol = 1)
+grid.arrange(p2, p4, ncol = 1)
+
+```
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+pander(h2o.confusionMatrix(rf_valid, metrics = "min_per_class_accuracy")[,1:3])
+pander(h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[,1:3])
+
+```
+
+The model had an AUC of `r round(h2o.auc(rf_valid), 4)` for the validation set and an AUC of `r round(h2o.auc(rf_test), 4)` for the test set.
+Creating the confusion matrixes, the rows are the actual values and the columns are the predictions. In the prediction of the validation set, we failed to identify `r round(h2o.confusionMatrix(rf_valid, metrics = "min_per_class_accuracy")[1,3]*100, 2)`% of the articles with "high" number of shares, which ended up being classified as "low". 
+In the prediction of the test set, we failed to identify `r round(h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[1,3]*100, 2)`% of the articles with "high" number of shares, which ended up being classified as "low". 
+These error rates are fairly similar, therefore we can conclude that the model is not overfitting.
+  
+The best model is the model with `r rf_best@parameters$max_depth` as max tree depth and `r rf_best@parameters$mtries` as used input variables in each tree.  
+
+## Gradient Boosting Machine modeling
+
+I used different number of predictors other than the baseline setup: tried models with a learning rate from 0.03 to 0.11 with steps of 0.02. The max depth of trees was varied between 4 and 8 and in all forests 100 trees were fitted. The seed is set within the loop, so the results are reproducible. In all steps I used h2o as it turned out to be quite useful with the standardized set of commands.
+
+Firstly, I ran the model with grid search included, then models with specific hyperparameter sets were sorted and filtered based on the highest AUC value.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE, results = 'hide'}
+
+# GBM
+h2o.rm("GBM")
+
+gbm <- h2o.grid(
+  algorithm = "gbm", 
+  grid_id = "GBM",
+  hyper_params = list(learn_rate = c(0.03, 0.05, 0.07, 0.09, 0.11), max_depth = c(4, 5, 6, 7, 8)),
+  training_frame = h2o_dt$train,
+  validation_frame = h2o_dt$valid,
+  x = colnames(h2o_dt$train),
+  y = "shares_cat",
+  seed = 2017,
+  ntrees = 100
+)
+
+gbm_model <- h2o.getGrid(
+  grid_id = "GBM", 
+  sort_by = "auc",
+  decreasing = TRUE)
+
+```
+
+As the next step, the model with the best parameter set was run on the validation and the test set to receive AUC values. 
+
+The plots below showcase the results for accuracy and the ROC curve with different threshold for validation set and test set. The results are fairly similar, but not the same for the two.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+gbm_model
+gbm_best <- h2o.getModel(gbm_model@model_ids[[1]]) # Getting the best model
+gbm_best@parameters$max_depth # Get max_depth from the best model
+gbm_best@parameters$learn_rate # Get learning rate from the best model
+
+gbm_valid <- h2o.performance(gbm_best, valid = TRUE) # Running the best model on validation data
+gbm_validrate <- cbind(h2o.fpr(gbm_valid), h2o.tpr(gbm_valid)$tpr)
+colnames(gbm_validrate)[2] <- "fpr"
+colnames(gbm_validrate)[3] <- "tpr"
+gbm_test <- h2o.performance(gbm_best, newdata = h2o_dt$test) # Running the best model on test data
+gbm_testrate <- cbind(h2o.fpr(gbm_test), h2o.tpr(gbm_test)$tpr)
+h2o.auc(gbm_test)
+colnames(gbm_validrate)[2] <- "fpr"
+colnames(gbm_testrate)[3] <- "tpr"
+
+p5 <- ggplot(h2o.F1(gbm_valid)) + 
+  geom_line(aes(x = threshold, y = f1, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="red", midpoint = 0.5) +
+  labs(x = "Threshold", y = "Accuracy", 
+       title ="Accuracy of prediction for the validation set")
+
+p6 <- ggplot(h2o.F1(gbm_test)) + 
+  geom_line(aes(x = threshold, y = f1, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="blue", midpoint = 0.5) +
+  labs(x = "Threshold", y = "Accuracy", 
+       title ="Accuracy of prediction for the test set")
+
+p7 <- ggplot(gbm_validrate) + 
+  geom_line(aes(x = fpr, y = tpr, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="red", midpoint = 0.5) +
+  labs(x = "False Positive Rate", y = "True Positive Rate", 
+       title ="AUC curve for the validation set")
+
+p8 <- ggplot(gbm_testrate) + 
+  geom_line(aes(x = fpr, y = tpr, color = threshold), size = 2) +
+  scale_color_gradient2("Threshold", low = "black", mid = "yellow", high ="blue", midpoint = 0.5) +
+  labs(x = "False Positive Rate", y = "True Positive Rate", 
+       title ="AUC curve for the test set") 
+
+grid.arrange(p5, p7, ncol = 1)
+grid.arrange(p6, p8, ncol = 1)
+
+```
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+pander(h2o.confusionMatrix(gbm_valid, metrics = "min_per_class_accuracy")[,1:3])
+pander(h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[,1:3])
+
+```
+
+The model had an AUC of `r round(h2o.auc(gbm_valid), 4)` for the validation set and an AUC of `r round(h2o.auc(gbm_test), 4)` for the test set.
+Creating the confusion matrixes, the rows are the actual values and the columns are the predictions. In the prediction of the validation set, we failed to identify `r round(h2o.confusionMatrix(gbm_valid, metrics = "min_per_class_accuracy")[1,3]*100, 2)`% of the articles with "high" number of shares, which ended up being classified as "low". 
+In the prediction of the test set, we failed to identify `r round(h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[1,3]*100, 2)`% of the articles with "high" number of shares, which ended up being classified as "low". 
+These error rates are the same, therefore we can conclude that the model is not overfitting.
+  
+The best model is the model with `r gbm_best@parameters$max_depth` as max tree depth and `r gbm_best@parameters$learn_rate` as used learning rate.  
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+h2o.varimp_plot(rf_best, num_of_features = 10)
+h2o.varimp_plot(gbm_best, num_of_features = 10)
+
+```
+
+As the plots show, the most important variables present in both models are:
+* kw_avg_avg - having the relative importance 1.0 in both
+* kw_max_avg
+* kw_avg_max
+* self_reference_avg_shares
+* self_reference_min_shareness
+* n_unique_tokens
+* global_subjectivity
+ 
+This means that for further iterations of the models, more explanatory analysis needs to be done on the most important variables.
+
+```{r include = TRUE, tidy = TRUE, warning = FALSE, message = FALSE}
+
+p9 <- ggplot(dt, aes(x = kw_avg_avg, y = log_shares)) +
+  geom_point(size = 1.5, aes(col = (shares))) +
+  geom_smooth() +
+  labs(
+    x = "Avg. keyword (avg. shares)",
+    y = "Log shares",
+    title ="Log Shares on Avg. keyword (avg. shares)") +
+  scale_color_distiller("Shares", palette = "Spectral") +
+  theme_bw()
+
+p10 <- ggplot(dt, aes(x = global_subjectivity, y = log_shares)) +
+  geom_point(size = 1.5, aes(col = (shares))) +
+  geom_smooth() +
+  labs(
+    x = "Global subjectivity",
+    y = "Log shares",
+    title ="Log Shares on Global subjectivity") +
+  scale_color_distiller("Shares", palette = "Spectral") +
+  theme_bw()
+
+grid.arrange(p9, p10, ncol = 1)
+
+```
+  
+## Model selection
+
+All 3 models presented relatively good results for the classification problem on the dataset.
+* Random Forest and GBM provided pretty similar results with GBM providing a slightly lower error rate and higher AUC
+* GBM produced more false positives than Random Forest, but the difference is not significant
+* The model selection would depend on the exact business problem analysed, which means that priorities on the true positive/false positive ratio and on the cost of false positive vs false negative need to be considered.
+
+  
+| Model | Number of trees | AUC | FN/FP ratio | TP/FP ratio |
+|:-----:|:---------------:|:---:|:-----------:|:-----------:|
+Random Forest with grid search|100|`r round(h2o.auc(rf_valid), 4)`|`r round((h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[1,2]*100)/(h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[2,1]*100), 4)`|`r round((h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[1,1]*100)/(h2o.confusionMatrix(rf_test, metrics = "min_per_class_accuracy")[2,1]*100), 4)`|
+Gradient Boosting Machine with grid search|100|`r round(h2o.auc(gbm_valid), 4)`|`r round((h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[1,2]*100)/(h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[2,1]*100), 4)`|`r round((h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[1,1]*100)/(h2o.confusionMatrix(gbm_test, metrics = "min_per_class_accuracy")[2,1]*100), 4)`|
+
+
+
